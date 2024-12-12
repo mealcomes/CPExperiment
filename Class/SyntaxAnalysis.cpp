@@ -2,9 +2,6 @@
 
 void SyntaxAnalysis::parseLexer() {
     if(nowLineIndex == nowLine.size()) {
-//        if(is_eof) {
-//            return;
-//        }
         if(!std::getline(inputStream, nowLine)) {
 //            is_eof = true;
             return;
@@ -34,18 +31,18 @@ void SyntaxAnalysis::parseLexer() {
                 str += c;
             }
             else {
-                // 否则不能连接，则先把当前str的类别识别、输出并清空str
+                // str不为空则其为一个token
                 if (!str.empty()) {
                     nextTokens.push_back(str);
                     return;
                 }
-                // 下一个字符为=，则说明当前位置是上述的四种类别，那么将对应的单词识别结果输出，并将i+1以跳过该单词
+                // 下一个字符为=，则说明当前位置是上述的四种类别，那么将对应的token识别结果输出，并将下标+1以跳过该token
                 if (nowLine[nowLineIndex + 1] == '=') {
                     nextTokens.push_back(std::string(1, c) + std::string(1, nowLine[nowLineIndex + 1]));
                     nowLineIndex += 2;
                     return;
                 }
-                // 下一个字符不为=，则说明当前位置不是上述四种类别，则直接将本字符识别结果输出
+                // 下一个字符不为=，则说明当前位置不是上述四种类别，则直接将本字符识别为token
                 else {
                     nextTokens.emplace_back(1, c);
                     nowLineIndex++;
@@ -60,12 +57,12 @@ void SyntaxAnalysis::parseLexer() {
                 str += c;
             }
             else {
-                // 先识别、输出并清空str
+                // str不为空则为一个token
                 if(!str.empty()) {
                     nextTokens.push_back(str);
                     return;
                 }
-                // 输出当前字符识别结果
+                // 当前字符为一个token
                 nextTokens.emplace_back(1, c);
                 nowLineIndex++;
                 return;
@@ -874,7 +871,7 @@ void SyntaxAnalysis::parseReturnS() {
     outputStream << NONE_TERMINAL["RETURNS"] << std::endl;
 }
 
-/** 解决冲突
+/** 解决冲突 （为了能通过实验系统的测试，现已废弃）
  *          <变量说明>             <有返回值函数定义>
  *            /  \                  /        \
  *           /    \                /          \
@@ -918,5 +915,3 @@ void SyntaxAnalysis::parse(int select, bool isCheckAnswer) {
         }
     }
 }
-
-

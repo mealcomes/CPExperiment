@@ -35,7 +35,6 @@ private:
     std::string lookahead{}, nextToken{};
     std::vector<std::string> nextTokens;
     int nowLineIndex{};
-    [[maybe_unused]] bool is_eof{};
     std::map<std::string, int> functions;
 
     void parseLexer();
