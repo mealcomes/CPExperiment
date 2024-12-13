@@ -1,11 +1,13 @@
 #include "SyntaxAnalysis.h"
 
 void SyntaxAnalysis::parseLexer() {
+    // 当前行分析结束，读取下一行
     if(nowLineIndex == nowLine.size()) {
+        // 当读取到文件末尾后便不能继续读
         if(!std::getline(inputStream, nowLine)) {
-//            is_eof = true;
             return;
         }
+        // 行计数自增1，nowLineIndex变为0
         lineCnt++;
         nowLineIndex = 0;
     }
@@ -77,21 +79,27 @@ void SyntaxAnalysis::parseLexer() {
 }
 
 void SyntaxAnalysis::getToken() {
+    // 初始时nextTokens为空，由于我们需单独缓存两个token，所以此时先读取两个token存于nextTokens中
     if(nextTokens.empty()) {
         parseLexer();
         parseLexer();
     }
+    // 缓存存在token
     if(!nextTokens.empty()){
+        // 移除一个token至lookahead，并将该token从缓存中移除
         lookahead = nextTokens[0];
         nextTokens.erase(nextTokens.begin());
+        // 缓存一个token
         parseLexer();
     }
 }
 
 void SyntaxAnalysis::matchToken(const std::string& expected) {
+    // 当匹配不成输出错误
     if(lookahead != expected) {
         Error();
     }
+    // 匹配成功则调用父类LexerAnalysis的outputCharacter函数将该token对应的类别码输出到文件中
     else {
         outputCharacter(outputStream, lookahead);
         getToken();
@@ -122,6 +130,7 @@ int SyntaxAnalysis::checkCommonCharacter(std::string& target) {
 
 // 有待优化error output
 void SyntaxAnalysis::Error() const {
+    // 输出出错行的内容
     std::cerr << "At line " << lineCnt << ": \n";
     for(int i = 0; i < nowLineIndex; i++) {
         std::cerr << nowLine[i];
@@ -130,26 +139,35 @@ void SyntaxAnalysis::Error() const {
 }
 
 void SyntaxAnalysis::parseProgram() {
+    // 当前token为"const"，则分析<常量说明>  例如: const int const1 = 1, const2 = -100;
     if(lookahead == "const") {
         parseDeclConst();
     }
+    // 当前token为"char"或"int"且下下个token不为"("，则分析<变量说明>  例如: int change1;
     if((lookahead == "char" || lookahead == "int") && nextTokens[1] != "(") {
         parseDeclVar();
     }
+    // 当前token为"char"或"int"或"void"且下个token不为"main"，则分析＜有返回值函数定义＞或＜无返回值函数定义＞
+    // 这里也需要下下个token为"("，但由于上面变量分析时已经进行判断，所以这里无需再判断
     while(lookahead == "char" || lookahead == "int" || lookahead == "void" && nextTokens[0] != "main") {
+        // 当前token为"int"或"char"，则分析＜有返回值函数定义＞
         if(lookahead == "int" || lookahead == "char") {
             parseDefiFunc();
         }
+        // 当前token为"void"，则分析＜无返回值函数定义＞
         else if(lookahead == "void"){
             parseDefiVoidFunc();
         }
+        // 输入程序的词法有误，输出错误
         else {
             Error();
         }
     }
+    // 当前token为"void"且下一个token为"main"。则分析<主函数>
     if(lookahead == "void" && nextTokens[0] == "main") {
         parseMain();
     }
+    // 输出当前语法成分到output.txt文件，即<程序>
     outputStream << NONE_TERMINAL["PROGRAM"] << std::endl;
 }
 
@@ -901,15 +919,20 @@ void SyntaxAnalysis::parseReturnS() {
 }*/
 
 void SyntaxAnalysis::parse(int select, bool isCheckAnswer) {
+    // 进行程词法分析
     if(select == LEXER) {
         LexerAnalysis::parseLexer();
     }
+    // 进行语法分析
     else if(select == SYNTAX) {
         if (!inputStream) {
             std::cerr << "Can't open the file " << OUTPUT_FILE << "!\n";
         }
+        // 现获取token
         getToken();
+        // 开始分析程序
         parseProgram();
+        // 调用父类函数核查答案
         if (isCheckAnswer) {
             LexerAnalysis::checkAnswer();
         }

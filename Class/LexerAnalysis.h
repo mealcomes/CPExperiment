@@ -17,7 +17,6 @@
 
 class LexerAnalysis {
 protected:
-    void outputCharacter(std::ofstream& of, const std::string& ch);
     std::map<std::string, std::string> CLASS_CODE = {
             {"const", "CONSTTK"},{"int", "INTTK"},{"char", "CHARTK"},{"void", "VOIDTK"},
             {"main", "MAINTK"},{"if", "IFTK"},{"else", "ELSETK"},{"do", "DOTK"},
@@ -31,6 +30,7 @@ protected:
     std::map<int, std::string> COMMON = {
             {1, "IDENFR"},{2, "INTCON"},{3, "CHARCON"},{4, "STRCON"}
     };
+    void outputCharacter(std::ofstream& of, const std::string& ch);
     std::string INPUT_FILE{};
     std::string OUTPUT_FILE{};
     std::string ANSWER_FILE{};
